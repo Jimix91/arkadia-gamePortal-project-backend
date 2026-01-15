@@ -1,5 +1,6 @@
 const Review = require("../models/Reviews.model");
 const router = require("express").Router();
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 router.get("/reviews", (req, res, next) => {
   Review.find()
