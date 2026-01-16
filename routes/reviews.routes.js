@@ -4,8 +4,8 @@ const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 router.get("/reviews", (req, res, next) => {
   Review.find()
-    .populate("author", "username")
-    .populate("game", "title")
+    .populate("author")
+    .populate("game")
     .then((reviews) => {
       res.json(reviews);
     })

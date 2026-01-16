@@ -9,7 +9,7 @@ const gameSchema = new Schema(
       unique: true
     },
 
-    coverImage: {
+    image: {
       type: String,
       default: ""
     },
