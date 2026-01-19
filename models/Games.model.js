@@ -17,13 +17,13 @@ const gameSchema = new Schema(
     platforms: {
       type: [String],
       required: true,
-      enum: ["PC", "PS5", "PS4", "Xbox", "Switch"]
+      enum: ["PC", "PS5", "PS4", "XBOX", "Switch"]
     },
 
     description: {
       type: String,
       default: ""
-    }
+    },
   },
   {
     timestamps: true
