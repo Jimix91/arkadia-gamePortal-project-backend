@@ -12,7 +12,7 @@ const reviewSchema = new Schema(
     rating: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 10
     },
 
@@ -27,6 +27,7 @@ const reviewSchema = new Schema(
       ref: "Game",
       required: true
     }
+    
   },
   {
     timestamps: true
