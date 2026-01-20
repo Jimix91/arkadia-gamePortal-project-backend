@@ -2,19 +2,6 @@ const Review = require("../models/Reviews.model");
 const router = require("express").Router();
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
-router.get("/reviews", (req, res, next) => {
-  Review.find()
-    .populate("author")
-    .populate("game")
-    .then((reviews) => {
-      res.json(reviews);
-    })
-    .catch((err) => {
-      console.log("Error getting reviews", err);
-      res.status(500).json({ error: "Error getting reviews" });
-    });
-});
-
 
 router.post("/reviews", isAuthenticated, (req, res, next) => {
   const newReview = req.body;
