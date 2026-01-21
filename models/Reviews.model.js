@@ -13,7 +13,7 @@ const reviewSchema = new Schema(
       type: Number,
       required: true,
       min: 0,
-      max: 10
+      max: 5
     },
 
     author: {
