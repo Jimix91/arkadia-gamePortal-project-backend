@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://arkadia-gameportal.vercel.app",
     credentials: true
   })
 );
@@ -32,7 +32,7 @@ app.use("/api", gamesRoutes);
 const reviewsRoutes = require("./routes/reviews.routes");
 app.use("/api", reviewsRoutes);
 
-/* Error handling */
+
 require("./error-handling")(app);
 
 module.exports = app;
