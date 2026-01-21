@@ -27,13 +27,15 @@ const gameSchema = new Schema(
 
     developer: {
       type: String,
-      trim: true
+      trim: true,
+      default: ""
     },
 
     year: {
       type: Number,
       min: 1970,
-      max: new Date().getFullYear()
+      max: new Date().getFullYear(),
+      default: 1970,
     },
 
     averageRating: {
