@@ -4,7 +4,11 @@ const router = require("express").Router();
 
 
 router.get("/games", (req, res, next) => {
-  Game.find()
+  const { platform } = req.query;
+  const normalizedPlatform = platform ? platform.toUpperCase() : null;
+  const filter = normalizedPlatform ? { platforms: normalizedPlatform } : {};
+
+  Game.find(filter)
     .then((games) => {
       res.json(games);
     })
