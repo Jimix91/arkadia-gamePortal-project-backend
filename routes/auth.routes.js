@@ -95,10 +95,10 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
         
-        const { _id, email, name } = foundUser;
+        const { _id, email, name, role } = foundUser;
 
        
-        const payload = { _id, email, name };
+        const payload = { _id, email, name, role };
 
         const authToken = signToken(payload);
 
@@ -164,6 +164,7 @@ router.post("/google", async (req, res, next) => {
       _id: user._id,
       email: user.email,
       name: user.name,
+      role: user.role,
     };
 
     const authToken = signToken(tokenPayload);
@@ -172,6 +173,55 @@ router.post("/google", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// Admin endpoints
+const { isAdmin } = require("../middleware/admin.middleware");
+
+// GET all users (admin only)
+router.get("/admin/users", isAdmin, (req, res, next) => {
+  User.find({}, "-password")
+    .then((users) => {
+      res.json(users);
+    })
+    .catch((err) => {
+      console.log("Error getting users", err);
+      res.status(500).json({ error: "Error getting users" });
+    });
+});
+
+// DELETE user (admin only)
+router.delete("/admin/users/:userId", isAdmin, (req, res, next) => {
+  const { userId } = req.params;
+
+  User.findByIdAndDelete(userId)
+    .then((deletedUser) => {
+      res.json({ message: "User deleted", user: deletedUser });
+    })
+    .catch((err) => {
+      console.log("Error deleting user", err);
+      res.status(500).json({ error: "Error deleting user" });
+    });
+});
+
+// UPDATE user (admin only)
+router.put("/admin/users/:userId", isAdmin, (req, res, next) => {
+  const { userId } = req.params;
+  const { name, email, role } = req.body;
+
+  const updateData = {};
+  if (name) updateData.name = name;
+  if (email) updateData.email = email;
+  if (role) updateData.role = role;
+
+  User.findByIdAndUpdate(userId, updateData, { new: true }, "-password")
+    .then((updatedUser) => {
+      res.json(updatedUser);
+    })
+    .catch((err) => {
+      console.log("Error updating user", err);
+      res.status(500).json({ error: "Error updating user" });
+    });
 });
 
 module.exports = router;

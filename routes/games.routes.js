@@ -1,16 +1,24 @@
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const { isAdmin } = require("../middleware/admin.middleware");
 const Game = require("../models/Games.model");
 const router = require("express").Router();
 
 
 router.get("/games", (req, res, next) => {
   const { platform } = req.query;
-  const normalizedPlatform = platform ? platform.toUpperCase() : null;
-  const filter = normalizedPlatform ? { platforms: normalizedPlatform } : {};
-
-  Game.find(filter)
+  
+  Game.find()
     .then((games) => {
-      res.json(games);
+      if (!platform) {
+        res.json(games);
+        return;
+      }
+      
+      // Filtrar case-insensitive en memoria
+      const filtered = games.filter((game) =>
+        game.platforms.some((p) => p.toLowerCase() === platform.toLowerCase())
+      );
+      res.json(filtered);
     })
     .catch((err) => {
       console.log("Error getting games", err);
@@ -18,7 +26,7 @@ router.get("/games", (req, res, next) => {
     });
 });
 
-router.post("/games", isAuthenticated, (req, res, next) => {
+router.post("/games", isAdmin, (req, res, next) => {
   const newGame = req.body;
 
   Game.create(newGame)
@@ -46,7 +54,7 @@ router.get("/games/:gameId", (req, res, next) => {
 });
 
 
-router.put("/games/:gameId", isAuthenticated, (req, res, next) => {
+router.put("/games/:gameId", isAdmin, (req, res, next) => {
   const { gameId } = req.params;
   const newGame = req.body;
 
@@ -61,7 +69,7 @@ router.put("/games/:gameId", isAuthenticated, (req, res, next) => {
 });
 
 
-router.delete("/games/:gameId", isAuthenticated, (req, res, next) => {
+router.delete("/games/:gameId", isAdmin, (req, res, next) => {
   const { gameId } = req.params;
 
   Game.findByIdAndDelete(gameId)
