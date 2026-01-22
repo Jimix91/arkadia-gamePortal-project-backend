@@ -2,6 +2,7 @@ const Review = require("../models/Reviews.model");
 const Game = require("../models/Games.model");
 const router = require("express").Router();
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const { isAdmin } = require("../middleware/admin.middleware");
 
 // Helper function to update average rating for a game
 async function updateGameAverageRating(gameId) {
@@ -76,11 +77,19 @@ router.get("/reviews/game/:gameId", (req, res, next) => {
 router.put("/reviews/:reviewId", isAuthenticated, async (req, res, next) => {
   const { reviewId } = req.params;
   const newReview = req.body;
+  const userId = req.payload._id;
+  const userRole = req.payload.role;
 
   try {
+    const review = await Review.findById(reviewId);
+    
+    // Admin puede editar cualquier review, usuario solo la suya
+    if (userRole !== "admin" && review.author.toString() !== userId.toString()) {
+      return res.status(403).json({ error: "No tienes permiso para editar esta reseña" });
+    }
+
     const reviewFromDB = await Review.findByIdAndUpdate(reviewId, newReview, { new: true });
     
-  
     const gameId = reviewFromDB.game;
     await updateGameAverageRating(gameId);
     
@@ -94,8 +103,17 @@ router.put("/reviews/:reviewId", isAuthenticated, async (req, res, next) => {
 
 router.delete("/reviews/:reviewId", isAuthenticated, async (req, res, next) => {
   const { reviewId } = req.params;
+  const userId = req.payload._id;
+  const userRole = req.payload.role;
 
   try {
+    const review = await Review.findById(reviewId);
+    
+    // Admin puede eliminar cualquier review, usuario solo la suya
+    if (userRole !== "admin" && review.author.toString() !== userId.toString()) {
+      return res.status(403).json({ error: "No tienes permiso para eliminar esta reseña" });
+    }
+
     const reviewFromDB = await Review.findByIdAndDelete(reviewId);
    
     if (reviewFromDB) {
