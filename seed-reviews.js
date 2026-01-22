@@ -30,13 +30,13 @@ const seedReviews = async () => {
     // Obtener o crear un usuario demo para las reviews
     let demoUser = await User.findOne({ email: "demo@arkadia.com" });
     if (!demoUser) {
-      demoUser = await User.create({
-        email: "demo@arkadia.com",
-        password: "hashedPassword123", // En producción hashear con bcrypt
-        name: "Demo User",
-        role: "user"
-      });
-      console.log("Usuario demo creado");
+      // Si no existe, buscar cualquier usuario existente
+      demoUser = await User.findOne({});
+      if (!demoUser) {
+        console.error("❌ No hay usuarios en la base de datos. Crea al menos un usuario primero.");
+        process.exit(1);
+      }
+      console.log(`Usando usuario existente: ${demoUser.name} (${demoUser.email})`);
     }
 
     // Obtener los primeros 10 juegos
