@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
 
 
 const User = require("../models/User.model");
@@ -9,6 +10,13 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 const saltRounds = 10;
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const signToken = (payload) =>
+  jwt.sign(payload, process.env.TOKEN_SECRET, {
+    algorithm: "HS256",
+    expiresIn: "6h",
+  });
 
 
 router.post("/signup", (req, res, next) => {
@@ -92,10 +100,7 @@ router.post("/login", (req, res, next) => {
        
         const payload = { _id, email, name };
 
-        const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
-          algorithm: "HS256",
-          expiresIn: "6h",
-        });
+        const authToken = signToken(payload);
 
         res.status(200).json({ authToken: authToken });
       } else {
@@ -111,6 +116,62 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
   console.log(`req.payload`, req.payload);
 
   res.status(200).json(req.payload);
+});
+
+// Google OAuth login/signup
+router.post("/google", async (req, res, next) => {
+  const { credential } = req.body;
+
+  if (!credential) {
+    res.status(400).json({ message: "Google credential is required" });
+    return;
+  }
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    res.status(500).json({ message: "Missing GOOGLE_CLIENT_ID" });
+    return;
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+    const name = payload?.name || email;
+
+    if (!email) {
+      res.status(400).json({ message: "Google account email not available" });
+      return;
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const salt = bcrypt.genSaltSync(saltRounds);
+      const hashedPassword = bcrypt.hashSync(credential + process.env.TOKEN_SECRET, salt);
+
+      user = await User.create({
+        email,
+        name,
+        password: hashedPassword,
+      });
+    }
+
+    const tokenPayload = {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+    };
+
+    const authToken = signToken(tokenPayload);
+
+    res.status(200).json({ authToken });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
