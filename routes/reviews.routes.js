@@ -36,19 +36,6 @@ router.post("/reviews/backfill-averages", async (req, res, next) => {
   }
 });
 
-// RUTA TEMPORAL: Eliminar todas las reviews (para limpiar producción)
-// IMPORTANTE: Eliminar esta ruta después de usarla
-router.delete("/reviews/delete-all-temp", isAdmin, async (req, res, next) => {
-  try {
-    const result = await Review.deleteMany({});
-    console.log(`🗑️ ${result.deletedCount} reviews eliminadas`);
-    res.json({ message: `${result.deletedCount} reviews eliminadas exitosamente` });
-  } catch (err) {
-    console.log("Error deleting all reviews", err);
-    res.status(500).json({ error: "Error deleting all reviews" });
-  }
-});
-
 router.post("/reviews/game/:gameId", isAuthenticated, async (req, res, next) => {
   const { gameId } = req.params;
   const newReview = req.body;
