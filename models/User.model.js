@@ -23,6 +23,13 @@ const userSchema = new Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    favorites: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Game",
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,

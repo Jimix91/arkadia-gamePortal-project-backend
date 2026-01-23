@@ -33,6 +33,9 @@ app.use("/api", gamesRoutes);
 const reviewsRoutes = require("./routes/reviews.routes");
 app.use("/api", reviewsRoutes);
 
+const usersRoutes = require("./routes/users.routes");
+app.use("/api", usersRoutes);
+
 
 require("./error-handling")(app);
 
